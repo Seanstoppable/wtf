@@ -1,6 +1,7 @@
 package security
 
 type SecurityData struct {
+	DiskEncryption  string
 	Dns             []string
 	FirewallEnabled string
 	FirewallStealth string
@@ -21,6 +22,7 @@ func (data SecurityData) DnsAt(idx int) string {
 }
 
 func (data *SecurityData) Fetch() {
+	data.DiskEncryption = DiskEncryptionState()
 	data.Dns = DnsServers()
 	data.FirewallEnabled = FirewallState()
 	data.FirewallStealth = FirewallStealthState()

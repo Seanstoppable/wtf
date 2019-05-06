@@ -64,6 +64,10 @@ func (widget *Widget) contentFrom(data *SecurityData) string {
 	str = str + fmt.Sprintf("  %12s\n", data.DnsAt(1))
 	str = str + "\n"
 
+	str = str + " [red]Disk Encryption[white]\n"
+	str = str + fmt.Sprintf(" %8s: %4s\n", "Status", data.DiskEncryption)
+	str = str + "\n"
+
 	return str
 }
 
