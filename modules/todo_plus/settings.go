@@ -46,3 +46,32 @@ func FromTodoist(name string, ymlConfig *config.Config, globalConfig *config.Con
 
 	return &settings
 }
+
+func FromTrello(name string, ymlConfig *config.Config, globalConfig *config.Config) *Settings {
+
+	accessToken := ymlConfig.UString("accessToken", ymlConfig.UString("apikey", os.Getenv("WTF_TRELLO_ACCESS_TOKEN")))
+	apiKey := ymlConfig.UString("apiKey", os.Getenv("WTF_TRELLO_APP_KEY"))
+	board := ymlConfig.UString("board")
+	username := ymlConfig.UString("username")
+	var lists []interface{}
+	list, err := ymlConfig.String("list")
+	if err == nil {
+		lists = append(lists, list)
+	} else {
+		lists = ymlConfig.UList("list")
+	}
+	backend, _ := config.ParseYaml("apiKey: " + apiKey)
+	backend.Set(".accessToken", accessToken)
+	backend.Set(".board", board)
+	backend.Set(".username", username)
+	backend.Set(".lists", lists)
+
+	settings := Settings{
+		common: cfg.NewCommonSettingsFromModule(name, defaultTitle, ymlConfig, globalConfig),
+
+		backendType:     "trello",
+		backendSettings: backend,
+	}
+
+	return &settings
+}

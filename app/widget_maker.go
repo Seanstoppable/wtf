@@ -47,7 +47,6 @@ import (
 	"github.com/wtfutil/wtf/modules/todo_plus"
 	"github.com/wtfutil/wtf/modules/transmission"
 	"github.com/wtfutil/wtf/modules/travisci"
-	"github.com/wtfutil/wtf/modules/trello"
 	"github.com/wtfutil/wtf/modules/twitter"
 	"github.com/wtfutil/wtf/modules/unknown"
 	"github.com/wtfutil/wtf/modules/victorops"
@@ -217,8 +216,8 @@ func MakeWidget(
 		settings := travisci.NewSettingsFromYAML(moduleName, moduleConfig, config)
 		widget = travisci.NewWidget(app, pages, settings)
 	case "trello":
-		settings := trello.NewSettingsFromYAML(moduleName, moduleConfig, config)
-		widget = trello.NewWidget(app, settings)
+		settings := todo_plus.FromTrello(moduleName, moduleConfig, config)
+		widget = todo_plus.NewWidget(app, pages, settings)
 	case "twitter":
 		settings := twitter.NewSettingsFromYAML(moduleName, moduleConfig, config)
 		widget = twitter.NewWidget(app, pages, settings)
