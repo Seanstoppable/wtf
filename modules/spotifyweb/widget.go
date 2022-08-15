@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/rivo/tview"
@@ -36,6 +35,7 @@ type Widget struct {
 	view.TextWidget
 
 	Info
+	Error       error
 
 	client      *spotify.Client
 	clientChan  chan *spotify.Client
@@ -86,6 +86,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.P
 	go func() {
 		err := http.ListenAndServe(":"+callbackPort, nil)
 		if err != nil {
+			widget.Error = err
 			return
 		}
 	}()
@@ -97,13 +98,12 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.P
 		// use the client to make calls that require authorization
 		_, err := client.CurrentUser()
 		if err != nil {
-			panic(err)
+			widget.Error = err
 		}
 
 		playerState, err = client.PlayerState()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			widget.Error = err
 		}
 
 		widget.client = client
@@ -164,18 +164,22 @@ func (w *Widget) Refresh() {
 func (w *Widget) createOutput() (string, string, bool) {
 	var output string
 
-	err := w.refreshSpotifyInfos()
-	if err != nil {
-		output = err.Error()
+	if w.Error != nil {
+		output = w.Error.Error()
 	} else {
-		output += utils.CenterText(fmt.Sprintf("[green]Now %v [white]\n", w.Info.Status), w.CommonSettings().Width)
-		output += utils.CenterText(fmt.Sprintf("[green]Title:[white] %v\n", w.Info.Title), w.CommonSettings().Width)
-		output += utils.CenterText(fmt.Sprintf("[green]Artist:[white] %v\n", w.Info.Artists), w.CommonSettings().Width)
-		output += utils.CenterText(fmt.Sprintf("[green]Album:[white] %v\n", w.Info.Album), w.CommonSettings().Width)
-		if w.playerState.ShuffleState {
-			output += utils.CenterText("[green]Shuffle:[white] on\n", w.CommonSettings().Width)
+		err := w.refreshSpotifyInfos()
+		if err != nil {
+			output = err.Error()
 		} else {
-			output += utils.CenterText("[green]Shuffle:[white] off\n", w.CommonSettings().Width)
+			output += utils.CenterText(fmt.Sprintf("[green]Now %v [white]\n", w.Info.Status), w.CommonSettings().Width)
+			output += utils.CenterText(fmt.Sprintf("[green]Title:[white] %v\n", w.Info.Title), w.CommonSettings().Width)
+			output += utils.CenterText(fmt.Sprintf("[green]Artist:[white] %v\n", w.Info.Artists), w.CommonSettings().Width)
+			output += utils.CenterText(fmt.Sprintf("[green]Album:[white] %v\n", w.Info.Album), w.CommonSettings().Width)
+			if w.playerState.ShuffleState {
+				output += utils.CenterText("[green]Shuffle:[white] on\n", w.CommonSettings().Width)
+			} else {
+				output += utils.CenterText("[green]Shuffle:[white] off\n", w.CommonSettings().Width)
+			}
 		}
 	}
 	return w.CommonSettings().Title, output, true

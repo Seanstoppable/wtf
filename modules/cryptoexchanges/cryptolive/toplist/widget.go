@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -14,6 +13,7 @@ var baseURL = "https://min-api.cryptocompare.com/data/top/exchanges"
 // Widget Toplist Widget
 type Widget struct {
 	Result string
+	Error  error
 
 	RefreshInterval time.Duration
 
@@ -57,7 +57,7 @@ func (widget *Widget) makeToList(symbol string, limit int) (list []*tCurrency) {
 func (widget *Widget) Refresh(wg *sync.WaitGroup) {
 	if len(widget.list.items) != 0 {
 
-		widget.updateData()
+		widget.Error = widget.updateData()
 
 		widget.display()
 	}
@@ -66,7 +66,7 @@ func (widget *Widget) Refresh(wg *sync.WaitGroup) {
 
 /* -------------------- Unexported Functions -------------------- */
 
-func (widget *Widget) updateData() {
+func (widget *Widget) updateData() error {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("recovered in updateSummary()", r)
@@ -88,7 +88,7 @@ func (widget *Widget) updateData() {
 			err := json.NewDecoder(response.Body).Decode(&jsonResponse)
 
 			if err != nil {
-				os.Exit(1)
+				return err
 			}
 
 			for idx, info := range jsonResponse.Data {
@@ -101,6 +101,7 @@ func (widget *Widget) updateData() {
 
 		}
 	}
+	return nil
 }
 
 func makeRequest(fsym, tsym string, limit int) *http.Request {

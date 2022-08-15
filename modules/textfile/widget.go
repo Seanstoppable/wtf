@@ -26,6 +26,8 @@ type Widget struct {
 	view.TextWidget
 
 	settings *Settings
+
+	Error error
 }
 
 // NewWidget creates a new instance of a widget
@@ -68,13 +70,20 @@ func (widget *Widget) content() (string, string, bool) {
 		widget.CurrentSource(),
 	)
 
-	_, _, width, _ := widget.View.GetRect()
-	text := widget.settings.PaginationMarker(len(widget.Sources), widget.Idx, width) + "\n"
+	text := ""
 
-	if widget.settings.format {
-		text += widget.formattedText()
+	if widget.Error != nil {
+		text = widget.Error.Error()
 	} else {
-		text += widget.plainText()
+
+		_, _, width, _ := widget.View.GetRect()
+		text = widget.settings.PaginationMarker(len(widget.Sources), widget.Idx, width) + "\n"
+
+		if widget.settings.format {
+			text += widget.formattedText()
+		} else {
+			text += widget.plainText()
+		}
 	}
 
 	return title, text, widget.settings.wrapText
@@ -135,8 +144,9 @@ func (widget *Widget) watchForFileChanges() {
 			case <-watch.Event:
 				widget.Refresh()
 			case err := <-watch.Error:
-				fmt.Println(err)
-				os.Exit(1)
+				widget.Error = err
+				widget.Refresh()
+				return
 			case <-watch.Closed:
 				return
 			case quit := <-widget.QuitChan():
@@ -151,17 +161,18 @@ func (widget *Widget) watchForFileChanges() {
 	for _, source := range widget.Sources {
 		fullPath, err := utils.ExpandHomeDir(source)
 		if err == nil {
-			e := watch.Add(fullPath)
-			if e != nil {
-				fmt.Println(e)
-				os.Exit(1)
+			err := watch.Add(fullPath)
+			if err != nil {
+				widget.Error = err
+				widget.Refresh()
+				return
 			}
 		}
 	}
 
 	// Start the watching process - it'll check for changes every pollingIntervalms.
 	if err := watch.Start(time.Millisecond * pollingIntervalms); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		widget.Error = err
+		widget.Refresh()
 	}
 }

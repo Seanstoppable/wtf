@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/rivo/tview"
@@ -38,7 +37,7 @@ func (widget *Widget) Refresh() {
 
 /* -------------------- Unexported Functions -------------------- */
 func (widget *Widget) content() (string, string, bool) {
-	positions, err := Fetch(widget.device_token)
+	positions, err := GetAllPositions(widget.device_token)
 	title := widget.CommonSettings().Title
 	if err != nil {
 		return title, err.Error(), true
@@ -129,12 +128,7 @@ func GetAllPositions(token string) (*AllPositionsResponse, error) {
 
 	err := json.Unmarshal(jsn, &parsed)
 	if err != nil {
-		log.Fatalf("Failed to parse json %v", err)
 		return nil, err
 	}
 	return &parsed, err
-}
-
-func Fetch(token string) (*AllPositionsResponse, error) {
-	return GetAllPositions(token)
 }

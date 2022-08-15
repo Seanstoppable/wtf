@@ -2,7 +2,6 @@ package zendesk
 
 import (
 	"encoding/json"
-	"log"
 )
 
 type TicketArray struct {
@@ -65,7 +64,7 @@ func (widget *Widget) newTickets() (*TicketArray, error) {
 	newTicketArray := &TicketArray{}
 	tickets, err := widget.listTickets(widget.settings.apiKey)
 	if err != nil {
-		log.Fatal(err)
+		return newTicketArray, err
 	}
 	for _, Ticket := range tickets.Tickets {
 		if Ticket.Status == widget.settings.status && Ticket.Status != "closed" && Ticket.Status != "solved" {

@@ -4,15 +4,19 @@ import "fmt"
 
 func (widget *Widget) display() {
 	str := ""
-	for _, fromCurrency := range widget.list.items {
-		str += fmt.Sprintf(
-			"[%s]%s [%s](%s)\n",
-			widget.settings.colors.from.displayName,
-			fromCurrency.displayName,
-			widget.settings.colors.from.name,
-			fromCurrency.name,
-		)
-		str += widget.makeToListText(fromCurrency.to)
+	if widget.Error != nil {
+		str = widget.Error.Error()
+	} else {
+		for _, fromCurrency := range widget.list.items {
+			str += fmt.Sprintf(
+				"[%s]%s [%s](%s)\n",
+				widget.settings.colors.from.displayName,
+				fromCurrency.displayName,
+				widget.settings.colors.from.name,
+				fromCurrency.name,
+			)
+			str += widget.makeToListText(fromCurrency.to)
+		}
 	}
 
 	widget.Result = str
