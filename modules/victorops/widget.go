@@ -14,13 +14,16 @@ type Widget struct {
 	teams    []OnCallTeam
 	settings *Settings
 	err      error
+	client   *VictorOpsClient
 }
 
 // NewWidget creates a new widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := NewVictorOpsClient(settings.apiID, settings.apiKey)
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 		settings:   settings,
+		client:     client,
 	}
 
 	widget.View.SetScrollable(true)
@@ -35,7 +38,7 @@ func (widget *Widget) Refresh() {
 		return
 	}
 
-	teams, err := Fetch(widget.settings.apiID, widget.settings.apiKey)
+	teams, err := widget.client.Fetch()
 
 	widget.err = err
 	widget.teams = teams

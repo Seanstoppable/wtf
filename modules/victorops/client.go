@@ -10,28 +10,43 @@ import (
 	"github.com/wtfutil/wtf/utils"
 )
 
+type VictorOpsClient struct {
+	apiId  string
+	apiKey string
+	client *http.Client
+}
+
+func NewVictorOpsClient(apiId, apiKey string) *VictorOpsClient {
+	client := utils.DefaultHttpClient()
+	victor := VictorOpsClient {
+		apiId: apiId,
+		apiKey: apiKey,
+		client: &client,
+	}
+	return &victor
+}
+
 // Fetch gets the current oncall users
-func Fetch(apiID, apiKey string) ([]OnCallTeam, error) {
+func (victor *VictorOpsClient) Fetch() ([]OnCallTeam, error) {
 	scheduleURL := "https://api.victorops.com/api-public/v1/oncall/current"
-	response, err := victorOpsRequest(scheduleURL, apiID, apiKey)
+	response, err := victor.opsRequest(scheduleURL)
 
 	return response, err
 }
 
 /* ---------------- Unexported Functions ---------------- */
 
-func victorOpsRequest(url string, apiID string, apiKey string) ([]OnCallTeam, error) {
+func (victor *VictorOpsClient) opsRequest(url string) ([]OnCallTeam, error) {
 	req, err := http.NewRequest("GET", url, http.NoBody)
 	if err != nil {
 		logger.Log(fmt.Sprintf("Failed to initialize sessions to VictorOps. ERROR: %s", err))
 		return nil, err
 	}
 
-	req.Header.Set("X-VO-Api-Id", apiID)
-	req.Header.Set("X-VO-Api-Key", apiKey)
-	client := utils.DefaultHttpClient()
+	req.Header.Set("X-VO-Api-Id", victor.apiId)
+	req.Header.Set("X-VO-Api-Key", victor.apiKey)
 
-	resp, err := client.Do(req)
+	resp, err := victor.client.Do(req)
 	if err != nil {
 		logger.Log(fmt.Sprintf("Failed to make request to VictorOps. ERROR: %s", err))
 		return nil, err
