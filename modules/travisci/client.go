@@ -13,15 +13,39 @@ var TRAVIS_HOSTS = map[bool]string{
 	true:  "travis-ci.com",
 }
 
-func BuildsFor(settings *Settings) (*Builds, error) {
-	builds := &Builds{}
+var (
+	travisAPIURL = &url.URL{Scheme: "https", Path: "/"}
+)
 
-	travisAPIURL.Host = "api." + TRAVIS_HOSTS[settings.pro]
+type TravisClient struct {
+	hostname string
+	baseUrl  string
+	apiKey   string
+	client  *http.Client
+}
+
+func NewTravisClient(settings *Settings) *TravisClient {
+	httpClient := utils.DefaultHttpClient()
+	hostname := "api." + TRAVIS_HOSTS[settings.pro]
+	baseUrl := "/api"
 	if settings.baseURL != "" {
-		travisAPIURL.Host = settings.baseURL
+		baseUrl = settings.baseURL
 	}
 
-	resp, err := travisBuildRequest(settings)
+	travis := TravisClient {
+		hostname: hostname,
+		apiKey: settings.apiKey,
+		baseUrl: baseUrl,
+		client: &httpClient,
+	}
+
+	return &travis
+}
+
+func (travis *TravisClient) BuildsFor(limit string, sortBy string) (*Builds, error) {
+	builds := &Builds{}
+
+	resp, err := travis.buildRequest(limit, sortBy)
 	if err != nil {
 		return builds, err
 	}
@@ -36,18 +60,12 @@ func BuildsFor(settings *Settings) (*Builds, error) {
 
 /* -------------------- Unexported Functions -------------------- */
 
-var (
-	travisAPIURL = &url.URL{Scheme: "https", Path: "/"}
-)
 
-func travisBuildRequest(settings *Settings) (*http.Response, error) {
+func (travis *TravisClient) buildRequest(limit string, sortBy string) (*http.Response, error) {
 	var path string = "builds"
-	if settings.baseURL != "" {
-		travisAPIURL.Path = "/api/"
-	}
 	params := url.Values{}
-	params.Add("limit", settings.limit)
-	params.Add("sort_by", settings.sort_by)
+	params.Add("limit", limit)
+	params.Add("sort_by", sortBy)
 
 	requestUrl := travisAPIURL.ResolveReference(&url.URL{Path: path, RawQuery: params.Encode()})
 
@@ -59,11 +77,10 @@ func travisBuildRequest(settings *Settings) (*http.Response, error) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Travis-API-Version", "3")
 
-	bearer := fmt.Sprintf("token %s", settings.apiKey)
+	bearer := fmt.Sprintf("token %s", travis.apiKey)
 	req.Header.Add("Authorization", bearer)
 
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(req)
+	resp, err := travis.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

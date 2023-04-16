@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/rivo/tview"
+	"github.com/wtfutil/wtf/utils"
 	"github.com/wtfutil/wtf/view"
 )
 
@@ -18,6 +19,7 @@ type Widget struct {
 
 	result   string
 	settings *Settings
+	client *http.Client
 }
 
 type ipinfo struct {
@@ -32,10 +34,12 @@ type ipinfo struct {
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
+		client: &client,
 	}
 
 	widget.View.SetWrap(false)
@@ -51,7 +55,6 @@ func (widget *Widget) Refresh() {
 
 // this method reads the config and calls ipinfo for ip information
 func (widget *Widget) ipinfo() {
-	client := &http.Client{}
 	var url string
 	ip, ipv6 := getMyIP(widget.settings.protocolVersion)
 	if ipv6 {
@@ -70,7 +73,7 @@ func (widget *Widget) ipinfo() {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", widget.settings.apiToken))
 	}
 
-	response, err := client.Do(req)
+	response, err := widget.client.Do(req)
 	if err != nil {
 		widget.result = err.Error()
 		return

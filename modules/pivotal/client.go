@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 type Resource struct {
@@ -18,6 +20,7 @@ type PivotalClient struct {
 	baseUrl   string
 	projectId string
 	user      *User
+	client    *http.Client
 }
 
 type Error struct {
@@ -31,21 +34,20 @@ func NewPivotalClient(token string, projectId string) *PivotalClient {
 	if baseUrl == "" {
 		baseUrl = "https://www.pivotaltracker.com/services/v5/"
 	}
+
+	client := utils.DefaultHttpClient()
 	pivotal := PivotalClient{
 		token:     token,
 		baseUrl:   baseUrl,
 		projectId: projectId,
+		client:    &client,
 	}
 	pivotal.user, _ = pivotal.getCurrentUser()
 	return &pivotal
 }
 
 func (pivotal *PivotalClient) apiv5(resource string) (*Resource, error) {
-	trn := &http.Transport{}
 	meth := "GET"
-	client := &http.Client{
-		Transport: trn,
-	}
 
 	apiToken := pivotal.token
 	URL := fmt.Sprintf("%s%s", pivotal.baseUrl, resource)
@@ -58,7 +60,7 @@ func (pivotal *PivotalClient) apiv5(resource string) (*Resource, error) {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("X-TrackerToken", apiToken)
 
-	resp, err := client.Do(req)
+	resp, err := pivotal.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

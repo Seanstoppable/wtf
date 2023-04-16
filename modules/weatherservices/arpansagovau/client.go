@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 type Stations struct {
@@ -60,7 +62,7 @@ func apiRequest() (*http.Response, error) {
 		return nil, err
 	}
 
-	httpClient := &http.Client{}
+	httpClient := utils.DefaultHttpClient()
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err

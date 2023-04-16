@@ -36,6 +36,7 @@ type Widget struct {
 
 	showType ShowType
 	err      error
+	client   *AirbrakeClient
 }
 
 type GroupJSON struct {
@@ -114,6 +115,7 @@ func rotateShowType(showtype ShowType) ShowType {
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := NewAirbrakeClient(settings.authToken)
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
@@ -121,6 +123,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.P
 		settings: settings,
 		pages:    pages,
 		showType: SHOW_TITLE,
+		client:   client,
 	}
 
 	widget.SetRenderFunction(widget.Render)
@@ -136,9 +139,7 @@ func (widget *Widget) Refresh() {
 		return
 	}
 
-	groups, err := groups(
-		widget.settings.projectID,
-		widget.settings.authToken)
+	groups, err := widget.client.groups(widget.settings.projectID)
 	if err != nil {
 		widget.err = err
 		widget.groups = nil
@@ -149,9 +150,7 @@ func (widget *Widget) Refresh() {
 		widget.SetItemCount(len(groups))
 	}
 
-	project, err := project(
-		widget.settings.projectID,
-		widget.settings.authToken)
+	project, err := widget.client.project(widget.settings.projectID)
 	if err != nil {
 		widget.err = err
 		widget.project = nil
@@ -262,7 +261,7 @@ func (widget *Widget) resolveGroup() {
 		}
 
 		var tbl *resultTable
-		err := resolveGroup(group.ProjectID, group.ID, widget.settings.authToken)
+		err := widget.client.resolveGroup(group.ProjectID, group.ID)
 		if err == nil {
 			tbl = newResultTable("Success", "Error Resolved")
 			widget.Refresh()
@@ -292,7 +291,7 @@ func (widget *Widget) muteGroup() {
 	if sel >= 0 && widget.groups != nil && sel < len(widget.groups) {
 		group := widget.groups[sel]
 		if !group.Muted {
-			widget.err = muteGroup(group.ProjectID, group.ID, widget.settings.authToken)
+			widget.err = widget.client.muteGroup(group.ProjectID, group.ID)
 			widget.Refresh()
 		}
 	}
@@ -308,7 +307,7 @@ func (widget *Widget) unmuteGroup() {
 	if sel >= 0 && widget.groups != nil && sel < len(widget.groups) {
 		group := widget.groups[sel]
 		if group.Muted {
-			widget.err = unmuteGroup(group.ProjectID, group.ID, widget.settings.authToken)
+			widget.err = widget.client.unmuteGroup(group.ProjectID, group.ID)
 			widget.Refresh()
 		}
 	}

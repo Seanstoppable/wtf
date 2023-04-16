@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 )
 
 const (
@@ -34,10 +33,6 @@ func (widget *Widget) fetchForAccount(account string, since string) (*Status, er
 		return nil, nil
 	}
 
-	hibpClient := http.Client{
-		Timeout: time.Second * clientTimeoutSecs,
-	}
-
 	asTruncated := true
 	if since != "" {
 		asTruncated = false
@@ -51,7 +46,7 @@ func (widget *Widget) fetchForAccount(account string, since string) (*Status, er
 	request.Header.Set("User-Agent", userAgent)
 	request.Header.Set("hibp-api-key", widget.settings.apiKey)
 
-	response, getErr := hibpClient.Do(request)
+	response, getErr := widget.client.Do(request)
 	if getErr != nil {
 		return nil, err
 	}

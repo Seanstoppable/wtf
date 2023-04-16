@@ -3,6 +3,8 @@ package bamboohr
 import (
 	"bytes"
 	"net/http"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 func Request(apiKey string, apiURL string) ([]byte, error) {
@@ -13,7 +15,7 @@ func Request(apiKey string, apiURL string) ([]byte, error) {
 
 	req.SetBasicAuth(apiKey, "x")
 
-	client := &http.Client{}
+	client := utils.DefaultHttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

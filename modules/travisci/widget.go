@@ -15,13 +15,16 @@ type Widget struct {
 	builds   *Builds
 	settings *Settings
 	err      error
+	client   *TravisClient
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := NewTravisClient(settings)
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
+		client: client,
 	}
 
 	widget.SetRenderFunction(widget.Render)
@@ -37,7 +40,7 @@ func (widget *Widget) Refresh() {
 		return
 	}
 
-	builds, err := BuildsFor(widget.settings)
+	builds, err := widget.client.BuildsFor(widget.settings.limit, widget.settings.sort_by)
 
 	if err != nil {
 		widget.err = err

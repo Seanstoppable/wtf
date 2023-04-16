@@ -2,6 +2,8 @@ package jira
 
 import (
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/rivo/tview"
 	"github.com/wtfutil/wtf/utils"
@@ -14,13 +16,16 @@ type Widget struct {
 	result   *SearchResult
 	settings *Settings
 	err      error
+	client   *http.Client
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := utils.SkipVerifyClient(30*time.Second, !settings.verifyServerCertificate)
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
+		client:   &client,
 	}
 
 	widget.SetRenderFunction(widget.Render)

@@ -61,7 +61,7 @@ func apiRequest(path, apiToken string) (*http.Response, error) {
 	bearer := fmt.Sprintf("Bearer %s", apiToken)
 	req.Header.Add("Authorization", bearer)
 
-	httpClient := &http.Client{}
+	httpClient := utils.DefaultHttpClient()
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err

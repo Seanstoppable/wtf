@@ -3,11 +3,10 @@ package bittrex
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
 	"net/http"
 
 	"github.com/rivo/tview"
+	"github.com/wtfutil/wtf/utils"
 	"github.com/wtfutil/wtf/view"
 )
 
@@ -26,15 +25,19 @@ type Widget struct {
 
 	settings *Settings
 	summaryList
+	client *http.Client
 }
 
 // NewWidget Make new instance of widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings:    settings,
 		summaryList: summaryList{},
+		client:      &client,
 	}
 
 	ok = true
@@ -95,14 +98,10 @@ func (widget *Widget) updateSummary() {
 		}
 	}()
 
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
 	for _, baseCurrency := range widget.summaryList.items {
 		for _, mCurrency := range baseCurrency.markets {
 			request := makeRequest(baseCurrency.name, mCurrency.name)
-			response, err := client.Do(request)
+			response, err := widget.client.Do(request)
 
 			ok = true
 			errorText = ""

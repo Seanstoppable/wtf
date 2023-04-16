@@ -45,7 +45,7 @@ func rollbarItemRequest(accessToken, assignedToName string, activeOnly bool) (*h
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
-	httpClient := &http.Client{}
+	httpClient := utils.DefaultHttpClient()
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err

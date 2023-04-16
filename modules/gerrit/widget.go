@@ -1,7 +1,6 @@
 package gerrit
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -23,6 +22,7 @@ type Widget struct {
 	selected int
 	settings *Settings
 	err      error
+	client   *http.Client
 }
 
 var (
@@ -30,12 +30,14 @@ var (
 )
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, _ *tview.Pages, settings *Settings) *Widget {
+	client := utils.SkipVerifyClient(utils.DefaultTimeout, !settings.verifyServerCertificate)
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		Idx: 0,
 
 		settings: settings,
+		client:   &client,
 	}
 
 	widget.initializeKeyboardControls()
@@ -48,14 +50,6 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, _ *tview.Pages
 /* -------------------- Exported Functions -------------------- */
 
 func (widget *Widget) Refresh() {
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: !widget.settings.verifyServerCertificate,
-			},
-			Proxy: http.ProxyFromEnvironment,
-		},
-	}
 
 	gerritUrl := widget.settings.domain
 	submatches := GerritURLPattern.FindAllStringSubmatch(widget.settings.domain, -1)
@@ -70,7 +64,7 @@ func (widget *Widget) Refresh() {
 			submatch[2],
 		)
 	}
-	gerrit, err := glb.NewClient(gerritUrl, httpClient)
+	gerrit, err := glb.NewClient(gerritUrl, widget.client)
 	if err != nil {
 		widget.err = err
 		widget.gerrit = nil

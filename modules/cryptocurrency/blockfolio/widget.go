@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/rivo/tview"
+	"github.com/wtfutil/wtf/utils"
 	"github.com/wtfutil/wtf/view"
 )
 
@@ -16,14 +17,17 @@ type Widget struct {
 
 	device_token string
 	settings     *Settings
+	client       *http.Client
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		device_token: settings.deviceToken,
 		settings:     settings,
+		client:       &client,
 	}
 
 	return &widget
@@ -38,7 +42,7 @@ func (widget *Widget) Refresh() {
 
 /* -------------------- Unexported Functions -------------------- */
 func (widget *Widget) content() (string, string, bool) {
-	positions, err := Fetch(widget.device_token)
+	positions, err := widget.Fetch(widget.device_token)
 	title := widget.CommonSettings().Title
 	if err != nil {
 		return title, err.Error(), true
@@ -103,15 +107,14 @@ type AllPositionsResponse struct {
 	PositionList []Position `json:"positionList"`
 }
 
-func MakeApiRequest(token string, method string) ([]byte, error) {
-	client := &http.Client{}
+func(widget *Widget)  MakeApiRequest(token string, method string) ([]byte, error) {
 	url := "https://api-v0.blockfolio.com/rest/" + method + "/" + token + "?use_alias=true&fiat_currency=USD"
 	req, err := http.NewRequest("GET", url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add("magic", magic)
-	resp, err := client.Do(req)
+	resp, err := widget.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +126,8 @@ func MakeApiRequest(token string, method string) ([]byte, error) {
 	return body, err
 }
 
-func GetAllPositions(token string) (*AllPositionsResponse, error) {
-	jsn, _ := MakeApiRequest(token, "get_all_positions")
+func (widget *Widget) GetAllPositions(token string) (*AllPositionsResponse, error) {
+	jsn, _ := widget.MakeApiRequest(token, "get_all_positions")
 	var parsed AllPositionsResponse
 
 	err := json.Unmarshal(jsn, &parsed)
@@ -135,6 +138,6 @@ func GetAllPositions(token string) (*AllPositionsResponse, error) {
 	return &parsed, err
 }
 
-func Fetch(token string) (*AllPositionsResponse, error) {
-	return GetAllPositions(token)
+func (widget *Widget) Fetch(token string) (*AllPositionsResponse, error) {
+	return widget.GetAllPositions(token)
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/rivo/tview"
+	"github.com/wtfutil/wtf/utils"
 	"github.com/wtfutil/wtf/view"
 	"github.com/wtfutil/wtf/wtf"
 )
@@ -15,13 +16,16 @@ type Widget struct {
 
 	result   string
 	settings *Settings
+	client   *http.Client
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
+		client: &client,
 	}
 
 	return &widget
@@ -35,7 +39,6 @@ func (widget *Widget) Refresh() {
 
 // this method reads the config and calls wttr.in for pretty weather
 func (widget *Widget) prettyWeather() {
-	client := &http.Client{}
 
 	city := widget.settings.city
 	unit := widget.settings.unit
@@ -49,7 +52,7 @@ func (widget *Widget) prettyWeather() {
 
 	req.Header.Set("Accept-Language", widget.settings.language)
 	req.Header.Set("User-Agent", "curl")
-	response, err := client.Do(req)
+	response, err := widget.client.Do(req)
 	if err != nil {
 		widget.result = err.Error()
 		return

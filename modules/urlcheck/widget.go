@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rivo/tview"
+	"github.com/wtfutil/wtf/utils"
 	"github.com/wtfutil/wtf/view"
 )
 
@@ -24,13 +25,14 @@ type Widget struct {
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
 	maxUrl := len(settings.urls)
 
+	client := utils.DefaultHttpClient()
+
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
-
-		settings: settings,
-		urlList:  make([]*urlResult, maxUrl),
-		client:   &http.Client{},
-		timeout:  time.Duration(settings.requestTimeout) + time.Second,
+		client:     &client,
+		settings:   settings,
+		urlList:    make([]*urlResult, maxUrl),
+		timeout:    time.Duration(settings.requestTimeout) + time.Second,
 	}
 
 	widget.init()

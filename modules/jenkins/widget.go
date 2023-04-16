@@ -2,6 +2,7 @@ package jenkins
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/rivo/tview"
@@ -15,13 +16,16 @@ type Widget struct {
 	settings *Settings
 	view     *View
 	err      error
+	client   *http.Client
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := utils.SkipVerifyClient(utils.DefaultTimeout, !settings.verifyServerCertificate)
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
+		client:   &client,
 	}
 
 	widget.SetRenderFunction(widget.Render)

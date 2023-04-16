@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 const (
@@ -44,5 +46,6 @@ func NewWithHTTPClient(apiKey string, client *http.Client) *Client {
 
 // NewClient returns a new Client object for interfacing with the New Relic API.
 func NewClient(apiKey string) *Client {
-	return NewWithHTTPClient(apiKey, &http.Client{Timeout: defaultTimeout})
+	client := utils.DefaultHttpClientWithTimeout(defaultTimeout)
+	return NewWithHTTPClient(apiKey, &client)
 }

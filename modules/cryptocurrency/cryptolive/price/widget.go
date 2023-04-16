@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 var baseURL = "https://min-api.cryptocompare.com/data/price"
@@ -19,12 +21,15 @@ type Widget struct {
 	Result string
 
 	RefreshInterval time.Duration
+	client          *http.Client
 }
 
 // NewWidget Make new instance of widget
 func NewWidget(settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		settings: settings,
+		client:   &client,
 	}
 
 	widget.setList()
@@ -105,17 +110,10 @@ func (widget *Widget) updateCurrencies() {
 	}()
 	for _, fromCurrency := range widget.list.items {
 
-		var (
-			client       http.Client
-			jsonResponse cResponse
-		)
-
-		client = http.Client{
-			Timeout: 5 * time.Second,
-		}
+		var jsonResponse cResponse
 
 		request := makeRequest(fromCurrency)
-		response, err := client.Do(request)
+		response, err := widget.client.Do(request)
 
 		if err != nil {
 			ok = false

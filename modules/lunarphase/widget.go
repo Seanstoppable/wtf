@@ -23,19 +23,23 @@ type Widget struct {
 	settings  *Settings
 	timeout   time.Duration
 	titleBase string
+	client    *http.Client
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	timeout := time.Duration(settings.requestTimeout) * time.Second
+	client := utils.DefaultHttpClientWithTimeout(timeout)
 	widget := &Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 		settings:         settings,
+		timeout:          timeout,
+		client:           &client,
 	}
 
 	widget.current = true
 	widget.date = time.Now()
 	widget.day = widget.date.Format(dateFormat)
 	widget.last = ""
-	widget.timeout = time.Duration(widget.settings.requestTimeout) * time.Second
 	widget.titleBase = widget.settings.Title
 
 	widget.SetRenderFunction(widget.Refresh)
@@ -78,9 +82,6 @@ func (widget *Widget) RefreshTitle() {
 
 // this method reads the config and calls wttr.in for lunar phase
 func (widget *Widget) lunarPhase() {
-	client := &http.Client{
-		Timeout: widget.timeout,
-	}
 
 	language := widget.settings.language
 
@@ -92,7 +93,7 @@ func (widget *Widget) lunarPhase() {
 
 	req.Header.Set("Accept-Language", widget.settings.language)
 	req.Header.Set("User-Agent", "curl")
-	response, err := client.Do(req)
+	response, err := widget.client.Do(req)
 	if err != nil {
 		widget.result = err.Error()
 		return

@@ -11,12 +11,14 @@ import (
 )
 
 type Client struct {
-	apiKey string
+	apiKey     string
+	httpClient http.Client
 }
 
 func NewClient(apiKey string) *Client {
 	client := Client{
-		apiKey: apiKey,
+		apiKey:     apiKey,
+		httpClient: utils.DefaultHttpClient(),
 	}
 
 	return &client
@@ -57,8 +59,7 @@ func (client *Client) circleRequest(path string) ([]byte, error) {
 		return nil, err
 	}
 
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(req)
+	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

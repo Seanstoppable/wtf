@@ -5,19 +5,23 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 // Client ..
 type Client struct {
-	symbols []string
-	apiKey  string
+	symbols    []string
+	apiKey     string
+	httpClient http.Client
 }
 
 // NewClient ..
 func NewClient(symbols []string, apiKey string) *Client {
 	client := Client{
-		symbols: symbols,
-		apiKey:  apiKey,
+		symbols:    symbols,
+		apiKey:     apiKey,
+		httpClient: utils.DefaultHttpClient(),
 	}
 
 	return &client
@@ -65,8 +69,7 @@ func (client *Client) finnhubRequest(symbol string) (*http.Response, error) {
 		return nil, err
 	}
 
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(req)
+	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

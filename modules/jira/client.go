@@ -2,7 +2,6 @@ package jira
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -69,16 +68,7 @@ func (widget *Widget) jiraRequest(path string) ([]byte, error) {
 		req.SetBasicAuth(widget.settings.email, widget.settings.apiKey)
 	}
 
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: !widget.settings.verifyServerCertificate,
-			},
-			Proxy: http.ProxyFromEnvironment,
-		},
-	}
-
-	resp, err := httpClient.Do(req)
+	resp, err := widget.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 type Steam struct {
@@ -26,8 +28,10 @@ func NewClient(opts *ClientOpts) *Steam {
 
 	baseUrl += opts.key + "&steamids="
 
+	client := utils.DefaultHttpClient()
+
 	return &Steam{
-		client:  &http.Client{},
+		client:  &client,
 		baseUrl: baseUrl,
 	}
 }

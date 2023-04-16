@@ -2,8 +2,10 @@ package hibp
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/rivo/tview"
+	"github.com/wtfutil/wtf/utils"
 	"github.com/wtfutil/wtf/view"
 )
 
@@ -14,14 +16,17 @@ type Widget struct {
 	settings *Settings
 	statuses []*Status
 	err      error
+	client   *http.Client
 }
 
 // NewWidget creates a new instance of a widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := &Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
+		client: &client,
 	}
 
 	return widget

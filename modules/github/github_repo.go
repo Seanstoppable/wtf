@@ -3,7 +3,6 @@ package github
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	ghb "github.com/google/go-github/v32/github"
 	"github.com/wtfutil/wtf/utils"
@@ -26,6 +25,7 @@ type Repo struct {
 	PullRequests []*ghb.PullRequest
 	RemoteRepo   *ghb.Repository
 	Err          error
+	client       *ghb.Client
 }
 
 // NewGithubRepo returns a new Github Repo with a name, owner, apiKey, baseURL and uploadURL
@@ -38,7 +38,9 @@ func NewGithubRepo(name, owner, apiKey, baseURL, uploadURL string) *Repo {
 		baseURL:   baseURL,
 		uploadURL: uploadURL,
 	}
-
+	client, err := githubClient(apiKey, baseURL, uploadURL, repo.isGitHubEnterprise())
+	repo.Err = err
+	repo.client = client
 	return &repo
 }
 
@@ -109,22 +111,20 @@ func (repo *Repo) isGitHubEnterprise() bool {
 	return false
 }
 
-func (repo *Repo) oauthClient() *http.Client {
+func githubClient(apiKey string, baseURL string, uploadURL string, isGitHubEnterprise bool) (*ghb.Client, error) {
 	tokenService := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: repo.apiKey},
+		&oauth2.Token{AccessToken: apiKey},
 	)
 
-	return oauth2.NewClient(context.Background(), tokenService)
-}
+	oauthClient := oauth2.NewClient(context.Background(), tokenService)
 
-func (repo *Repo) githubClient() (*ghb.Client, error) {
-	oauthClient := repo.oauthClient()
-
-	if repo.isGitHubEnterprise() {
-		return ghb.NewEnterpriseClient(repo.baseURL, repo.uploadURL, oauthClient)
+	if isGitHubEnterprise {
+		return ghb.NewEnterpriseClient(baseURL, uploadURL, oauthClient)
 	}
 
-	return ghb.NewClient(oauthClient), nil
+	client := ghb.NewClient(oauthClient)
+
+	return client, nil
 }
 
 // myPullRequests returns a list of pull requests created by username on this repo
@@ -150,14 +150,13 @@ func (repo *Repo) myPullRequests(username string, showStatus bool) []*ghb.PullRe
 // github.PullRequests.List) and fetches them individually to get more detailed
 // status info on each. see: https://developer.github.com/v3/git/#checking-mergeability-of-pull-requests
 func (repo *Repo) individualPRs(prs []*ghb.PullRequest) []*ghb.PullRequest {
-	github, err := repo.githubClient()
-	if err != nil {
+	if (repo.client == nil) {
 		return prs
 	}
 
 	var ret []*ghb.PullRequest
 	for i := range prs {
-		pr, _, err := github.PullRequests.Get(context.Background(), repo.Owner, repo.Name, prs[i].GetNumber())
+		pr, _, err := repo.client.PullRequests.Get(context.Background(), repo.Owner, repo.Name, prs[i].GetNumber())
 		if err != nil {
 			// worst case, just keep the original one
 			ret = append(ret, prs[i])
@@ -185,30 +184,26 @@ func (repo *Repo) myReviewRequests(username string) []*ghb.PullRequest {
 }
 
 func (repo *Repo) customIssueQuery(filter string, perPage int) *ghb.IssuesSearchResult {
-	github, err := repo.githubClient()
-	if err != nil {
+	if (repo.client == nil) {
 		return nil
 	}
-
 	opts := &ghb.SearchOptions{}
 	if perPage != 0 {
 		opts.ListOptions.PerPage = perPage
 	}
 
-	prs, _, _ := github.Search.Issues(context.Background(), fmt.Sprintf("%s repo:%s/%s", filter, repo.Owner, repo.Name), opts)
+	prs, _, _ := repo.client.Search.Issues(context.Background(), fmt.Sprintf("%s repo:%s/%s", filter, repo.Owner, repo.Name), opts)
 	return prs
 }
 
 func (repo *Repo) loadPullRequests() ([]*ghb.PullRequest, error) {
-	github, err := repo.githubClient()
-	if err != nil {
-		return nil, err
+	if (repo.client == nil) {
+		return nil, repo.Err
 	}
-
 	opts := &ghb.PullRequestListOptions{}
 	opts.ListOptions.PerPage = 100
 
-	prs, _, err := github.PullRequests.List(context.Background(), repo.Owner, repo.Name, opts)
+	prs, _, err := repo.client.PullRequests.List(context.Background(), repo.Owner, repo.Name, opts)
 
 	if err != nil {
 		return nil, err
@@ -218,13 +213,10 @@ func (repo *Repo) loadPullRequests() ([]*ghb.PullRequest, error) {
 }
 
 func (repo *Repo) loadRemoteRepository() (*ghb.Repository, error) {
-	github, err := repo.githubClient()
-
-	if err != nil {
-		return nil, err
+	if (repo.client == nil) {
+		return nil, repo.Err
 	}
-
-	repository, _, err := github.Repositories.Get(context.Background(), repo.Owner, repo.Name)
+	repository, _, err := repo.client.Repositories.Get(context.Background(), repo.Owner, repo.Name)
 
 	if err != nil {
 		return nil, err

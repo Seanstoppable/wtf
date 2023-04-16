@@ -3,6 +3,8 @@ package football
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 var (
@@ -15,12 +17,14 @@ type leagueInfo struct {
 }
 
 type Client struct {
-	apiKey string
+	apiKey     string
+	httpClient http.Client
 }
 
 func NewClient(apiKey string) *Client {
 	client := Client{
-		apiKey: apiKey,
+		apiKey:     apiKey,
+		httpClient: utils.DefaultHttpClient(),
 	}
 
 	return &client
@@ -36,8 +40,7 @@ func (client *Client) footballRequest(path string, id int) (*http.Response, erro
 	if err != nil {
 		return nil, err
 	}
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(req)
+	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

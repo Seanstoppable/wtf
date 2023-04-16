@@ -1,7 +1,6 @@
 package jenkins
 
 import (
-	"crypto/tls"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -27,14 +26,7 @@ func (widget *Widget) Create(jenkinsURL string, username string, apiKey string) 
 	req, _ := http.NewRequest("GET", jenkinsAPIURL.String(), http.NoBody)
 	req.SetBasicAuth(username, apiKey)
 
-	httpClient := &http.Client{Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: !widget.settings.verifyServerCertificate,
-		},
-		Proxy: http.ProxyFromEnvironment,
-	},
-	}
-	resp, err := httpClient.Do(req)
+	resp, err := widget.client.Do(req)
 
 	if err != nil {
 		return view, err

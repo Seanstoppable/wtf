@@ -20,6 +20,7 @@ type Widget struct {
 
 	result   string
 	settings *Settings
+	client   *http.Client
 }
 
 type ipinfo struct {
@@ -67,10 +68,12 @@ var argLookup = map[string]string{
 
 // NewWidget constructor
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
+		client: &client,
 	}
 
 	widget.View.SetWrap(false)
@@ -87,14 +90,13 @@ func (widget *Widget) Refresh() {
 
 // this method reads the config and calls ipinfo for ip information
 func (widget *Widget) ipinfo() {
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", "http://ip-api.com/json?fields=66846719", http.NoBody)
 	if err != nil {
 		widget.result = err.Error()
 		return
 	}
 	req.Header.Set("User-Agent", "curl")
-	response, err := client.Do(req)
+	response, err := widget.client.Do(req)
 	if err != nil {
 		widget.result = err.Error()
 		return

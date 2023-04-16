@@ -7,6 +7,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 var baseURL = "https://min-api.cryptocompare.com/data/top/exchanges"
@@ -19,12 +21,15 @@ type Widget struct {
 
 	list     *cList
 	settings *Settings
+	client   *http.Client
 }
 
 // NewWidget Make new toplist widget
 func NewWidget(settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		settings: settings,
+		client:   &client,
 	}
 
 	widget.list = &cList{}
@@ -73,15 +78,11 @@ func (widget *Widget) updateData() {
 		}
 	}()
 
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
 	for _, fromCurrency := range widget.list.items {
 		for _, toCurrency := range fromCurrency.to {
 
 			request := makeRequest(fromCurrency.name, toCurrency.name, fromCurrency.limit)
-			response, _ := client.Do(request)
+			response, _ := widget.client.Do(request)
 
 			var jsonResponse responseInterface
 

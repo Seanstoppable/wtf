@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/wtfutil/wtf/logger"
+	"github.com/wtfutil/wtf/utils"
 )
 
 // Fetch gets the current oncall users
@@ -28,7 +29,7 @@ func victorOpsRequest(url string, apiID string, apiKey string) ([]OnCallTeam, er
 
 	req.Header.Set("X-VO-Api-Id", apiID)
 	req.Header.Set("X-VO-Api-Key", apiKey)
-	client := &http.Client{}
+	client := utils.DefaultHttpClient()
 
 	resp, err := client.Do(req)
 	if err != nil {

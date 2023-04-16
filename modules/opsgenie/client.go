@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 type OnCallResponse struct {
@@ -59,7 +61,7 @@ func opsGenieRequest(url string, apiKey string) (*OnCallResponse, error) {
 
 	req.Header.Set("Authorization", fmt.Sprintf("GenieKey %s", apiKey))
 
-	client := &http.Client{}
+	client := utils.DefaultHttpClient()
 
 	resp, err := client.Do(req)
 	if err != nil {

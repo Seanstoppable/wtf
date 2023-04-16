@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/wtfutil/wtf/utils"
 )
 
 type Resource struct {
@@ -12,11 +14,7 @@ type Resource struct {
 }
 
 func (widget *Widget) api(meth string) (*Resource, error) {
-	trn := &http.Transport{}
-
-	client := &http.Client{
-		Transport: trn,
-	}
+	client := utils.DefaultHttpClient()
 
 	baseURL := fmt.Sprintf("https://%v.zendesk.com/api/v2", widget.settings.subdomain)
 	URL := baseURL + "/tickets.json?sort_by=status"
