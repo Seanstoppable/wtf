@@ -21,7 +21,7 @@ type TravisClient struct {
 	hostname string
 	baseUrl  string
 	apiKey   string
-	client  *http.Client
+	client   *http.Client
 }
 
 func NewTravisClient(settings *Settings) *TravisClient {
@@ -32,11 +32,11 @@ func NewTravisClient(settings *Settings) *TravisClient {
 		baseUrl = settings.baseURL
 	}
 
-	travis := TravisClient {
+	travis := TravisClient{
 		hostname: hostname,
-		apiKey: settings.apiKey,
-		baseUrl: baseUrl,
-		client: &httpClient,
+		apiKey:   settings.apiKey,
+		baseUrl:  baseUrl,
+		client:   &httpClient,
 	}
 
 	return &travis
@@ -59,7 +59,6 @@ func (travis *TravisClient) BuildsFor(limit string, sortBy string) (*Builds, err
 }
 
 /* -------------------- Unexported Functions -------------------- */
-
 
 func (travis *TravisClient) buildRequest(limit string, sortBy string) (*http.Response, error) {
 	var path string = "builds"

@@ -19,7 +19,7 @@ type Widget struct {
 
 	result   string
 	settings *Settings
-	client *http.Client
+	client   *http.Client
 }
 
 type ipinfo struct {
@@ -39,7 +39,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Sett
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
-		client: &client,
+		client:   &client,
 	}
 
 	widget.View.SetWrap(false)

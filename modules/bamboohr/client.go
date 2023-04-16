@@ -67,7 +67,6 @@ func (client *BambooClient) getWhoIsAway(startDate, endDate string) (cal Calenda
 	return
 }
 
-
 func (client *BambooClient) request(apiURL string) ([]byte, error) {
 	req, err := http.NewRequest("GET", apiURL, http.NoBody)
 	if err != nil {

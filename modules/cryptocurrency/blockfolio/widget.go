@@ -107,7 +107,7 @@ type AllPositionsResponse struct {
 	PositionList []Position `json:"positionList"`
 }
 
-func(widget *Widget)  MakeApiRequest(token string, method string) ([]byte, error) {
+func (widget *Widget) MakeApiRequest(token string, method string) ([]byte, error) {
 	url := "https://api-v0.blockfolio.com/rest/" + method + "/" + token + "?use_alias=true&fiat_currency=USD"
 	req, err := http.NewRequest("GET", url, http.NoBody)
 	if err != nil {

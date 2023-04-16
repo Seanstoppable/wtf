@@ -9,13 +9,13 @@ import (
 
 type AirbrakeClient struct {
 	authToken string
-	client *http.Client
+	client    *http.Client
 }
 
 func NewAirbrakeClient(authToken string) *AirbrakeClient {
 	httpClient := utils.DefaultHttpClient()
-	airbrake := AirbrakeClient {
-		client: &httpClient,
+	airbrake := AirbrakeClient{
+		client:    &httpClient,
 		authToken: authToken,
 	}
 	return &airbrake

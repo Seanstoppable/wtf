@@ -150,7 +150,7 @@ func (repo *Repo) myPullRequests(username string, showStatus bool) []*ghb.PullRe
 // github.PullRequests.List) and fetches them individually to get more detailed
 // status info on each. see: https://developer.github.com/v3/git/#checking-mergeability-of-pull-requests
 func (repo *Repo) individualPRs(prs []*ghb.PullRequest) []*ghb.PullRequest {
-	if (repo.client == nil) {
+	if repo.client == nil {
 		return prs
 	}
 
@@ -184,7 +184,7 @@ func (repo *Repo) myReviewRequests(username string) []*ghb.PullRequest {
 }
 
 func (repo *Repo) customIssueQuery(filter string, perPage int) *ghb.IssuesSearchResult {
-	if (repo.client == nil) {
+	if repo.client == nil {
 		return nil
 	}
 	opts := &ghb.SearchOptions{}
@@ -197,7 +197,7 @@ func (repo *Repo) customIssueQuery(filter string, perPage int) *ghb.IssuesSearch
 }
 
 func (repo *Repo) loadPullRequests() ([]*ghb.PullRequest, error) {
-	if (repo.client == nil) {
+	if repo.client == nil {
 		return nil, repo.Err
 	}
 	opts := &ghb.PullRequestListOptions{}
@@ -213,7 +213,7 @@ func (repo *Repo) loadPullRequests() ([]*ghb.PullRequest, error) {
 }
 
 func (repo *Repo) loadRemoteRepository() (*ghb.Repository, error) {
-	if (repo.client == nil) {
+	if repo.client == nil {
 		return nil, repo.Err
 	}
 	repository, _, err := repo.client.Repositories.Get(context.Background(), repo.Owner, repo.Name)
