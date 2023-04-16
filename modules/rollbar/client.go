@@ -8,12 +8,25 @@ import (
 	"github.com/wtfutil/wtf/utils"
 )
 
-func CurrentActiveItems(accessToken, assignedToName string, activeOnly bool) (*ActiveItems, error) {
+type RollbarClient struct {
+	accessToken string
+	client      *http.Client
+}
+
+func NewRollbarClient(accessToken string) *RollbarClient {
+	httpClient := utils.DefaultHttpClient()
+	rollbar := RollbarClient {
+		accessToken: accessToken,
+		client: &httpClient,
+	}
+
+	return &rollbar
+}
+
+func (rollbar *RollbarClient) CurrentActiveItems(assignedToName string, activeOnly bool) (*ActiveItems, error) {
 	items := &ActiveItems{}
 
-	rollbarAPIURL.Host = "api.rollbar.com"
-	rollbarAPIURL.Path = "/api/1/items"
-	resp, err := rollbarItemRequest(accessToken, assignedToName, activeOnly)
+	resp, err := rollbar.rollbarItemRequest(assignedToName, activeOnly)
 	if err != nil {
 		return items, err
 	}
@@ -29,12 +42,16 @@ func CurrentActiveItems(accessToken, assignedToName string, activeOnly bool) (*A
 /* -------------------- Unexported Functions -------------------- */
 
 var (
-	rollbarAPIURL = &url.URL{Scheme: "https"}
+	rollbarAPIURL = &url.URL{
+		Scheme: "https",
+		Host: "api.rollbar.com",
+		Path: "/api/1/items",
+	}
 )
 
-func rollbarItemRequest(accessToken, assignedToName string, activeOnly bool) (*http.Response, error) {
+func (rollbar *RollbarClient) rollbarItemRequest(assignedToName string, activeOnly bool) (*http.Response, error) {
 	params := url.Values{}
-	params.Add("access_token", accessToken)
+	params.Add("access_token", rollbar.accessToken)
 	params.Add("assigned_user", assignedToName)
 	if activeOnly {
 		params.Add("status", "active")
@@ -45,8 +62,7 @@ func rollbarItemRequest(accessToken, assignedToName string, activeOnly bool) (*h
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
-	httpClient := utils.DefaultHttpClient()
-	resp, err := httpClient.Do(req)
+	resp, err := rollbar.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

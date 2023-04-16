@@ -15,14 +15,17 @@ type Widget struct {
 	items    *Result
 	settings *Settings
 	err      error
+	client   *RollbarClient
 }
 
 // NewWidget creates a new instance of a widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := NewRollbarClient(settings.accessToken)
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
+		client:   client,
 	}
 
 	widget.SetRenderFunction(widget.Render)
@@ -38,8 +41,7 @@ func (widget *Widget) Refresh() {
 		return
 	}
 
-	items, err := CurrentActiveItems(
-		widget.settings.accessToken,
+	items, err := widget.client.CurrentActiveItems(
 		widget.settings.assignedToName,
 		widget.settings.activeOnly,
 	)
