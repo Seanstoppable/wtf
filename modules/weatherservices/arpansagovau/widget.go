@@ -13,26 +13,28 @@ type Widget struct {
 	location  *location
 	lastError error
 	settings  *Settings
+	client    *ArpanClient
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
-	locationData, err := getLocationData(settings.city)
+	client := NewArpanClient()
+	locationData, err := client.GetLocationData(settings.city)
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		location:  locationData,
 		lastError: err,
 		settings:  settings,
+		client:    client,
 	}
 
 	widget.View.SetWrap(true)
-
 	return &widget
 }
 
 func (widget *Widget) content() (string, string, bool) {
 
-	locationData, err := getLocationData(widget.settings.city)
+	locationData, err := widget.client.GetLocationData(widget.settings.city)
 	widget.location = locationData
 	widget.lastError = err
 

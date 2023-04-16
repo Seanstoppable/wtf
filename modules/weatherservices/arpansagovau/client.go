@@ -33,9 +33,21 @@ type location struct {
 	status string
 }
 
-func getLocationData(cityname string) (*location, error) {
+type ArpanClient struct {
+	client *http.Client
+}
+
+func NewArpanClient() *ArpanClient {
+	client := utils.DefaultHttpClient()
+	arpan := ArpanClient {
+		client: &client,
+	}
+	return &arpan
+}
+
+func (arpan *ArpanClient) GetLocationData(cityname string) (*location, error) {
 	var locdata location
-	resp, err := apiRequest()
+	resp, err := arpan.apiRequest()
 	if err != nil {
 		return nil, err
 	}
@@ -56,14 +68,13 @@ func getLocationData(cityname string) (*location, error) {
 
 /* -------------------- Unexported Functions -------------------- */
 
-func apiRequest() (*http.Response, error) {
+func (arpan *ArpanClient) apiRequest() (*http.Response, error) {
 	req, err := http.NewRequest("GET", "https://uvdata.arpansa.gov.au/xml/uvvalues.xml", http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	httpClient := utils.DefaultHttpClient()
-	resp, err := httpClient.Do(req)
+	resp, err := arpan.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +86,7 @@ func apiRequest() (*http.Response, error) {
 
 	return resp, nil
 }
+
 func parseXML(text io.Reader) (Stations, error) {
 	dec := xml.NewDecoder(text)
 	dec.Strict = false

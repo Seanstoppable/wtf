@@ -17,13 +17,20 @@ type Widget struct {
 
 	settings *Settings
 	items    []Item
+	client   *BambooClient
 }
 
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Settings) *Widget {
+	client := NewBambooClient(
+		apiURI,
+		settings.apiKey,
+		settings.subdomain,
+	)
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
+		client:   client,
 	}
 
 	return &widget
@@ -32,13 +39,8 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Sett
 /* -------------------- Exported Functions -------------------- */
 
 func (widget *Widget) Refresh() {
-	client := NewClient(
-		apiURI,
-		widget.settings.apiKey,
-		widget.settings.subdomain,
-	)
 
-	widget.items = client.Away(
+	widget.items = widget.client.Away(
 		"timeOff",
 		time.Now().Local().Format(wtf.DateFormat),
 		time.Now().Local().Format(wtf.DateFormat),
