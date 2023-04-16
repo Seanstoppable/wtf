@@ -14,14 +14,17 @@ type Widget struct {
 
 	messages []Message
 	settings *Settings
+	client   *GitterClient
 }
 
 // NewWidget creates a new instance of a widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := NewGitterClient(settings.apiToken)
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
+		client:   client,
 	}
 
 	widget.SetRenderFunction(widget.Refresh)
@@ -37,7 +40,7 @@ func (widget *Widget) Refresh() {
 		return
 	}
 
-	room, err := GetRoom(widget.settings.roomURI, widget.settings.apiToken)
+	room, err := widget.client.GetRoom(widget.settings.roomURI)
 	if err != nil {
 		widget.Redraw(func() (string, string, bool) { return widget.CommonSettings().Title, err.Error(), true })
 		return
@@ -48,7 +51,7 @@ func (widget *Widget) Refresh() {
 		return
 	}
 
-	messages, err := GetMessages(room.ID, widget.settings.numberOfMessages, widget.settings.apiToken)
+	messages, err := widget.client.GetMessages(room.ID, widget.settings.numberOfMessages)
 
 	if err != nil {
 		widget.Redraw(func() (string, string, bool) { return widget.CommonSettings().Title, err.Error(), true })

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/wtfutil/wtf/utils"
 )
 
 type Resource struct {
@@ -14,7 +12,6 @@ type Resource struct {
 }
 
 func (widget *Widget) api(meth string) (*Resource, error) {
-	client := utils.DefaultHttpClient()
 
 	baseURL := fmt.Sprintf("https://%v.zendesk.com/api/v2", widget.settings.subdomain)
 	URL := baseURL + "/tickets.json?sort_by=status"
@@ -29,7 +26,7 @@ func (widget *Widget) api(meth string) (*Resource, error) {
 	apiUser := fmt.Sprintf("%v/token", widget.settings.username)
 	req.SetBasicAuth(apiUser, widget.settings.apiKey)
 
-	resp, err := client.Do(req)
+	resp, err := widget.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

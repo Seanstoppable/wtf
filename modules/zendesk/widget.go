@@ -2,6 +2,7 @@ package zendesk
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/rivo/tview"
 	"github.com/wtfutil/wtf/utils"
@@ -15,14 +16,17 @@ type Widget struct {
 	result   *TicketArray
 	settings *Settings
 	err      error
+	client   *http.Client
 }
 
 // NewWidget creates a new instance of a widget
 func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.Pages, settings *Settings) *Widget {
+	client := utils.DefaultHttpClient()
 	widget := Widget{
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
+		client:   &client,
 	}
 
 	widget.SetRenderFunction(widget.Render)

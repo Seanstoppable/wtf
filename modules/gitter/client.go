@@ -8,10 +8,24 @@ import (
 	"github.com/wtfutil/wtf/utils"
 )
 
-func GetMessages(roomId string, numberOfMessages int, apiToken string) ([]Message, error) {
+type GitterClient struct {
+	apiToken string
+	client   *http.Client
+}
+
+func NewGitterClient(apiToken string) *GitterClient {
+	client := utils.DefaultHttpClient()
+	gitter := GitterClient {
+		apiToken: apiToken,
+		client:   &client,
+	}
+	return &gitter
+}
+
+func (gitter *GitterClient) GetMessages(roomId string, numberOfMessages int) ([]Message, error) {
 	var messages []Message
 
-	resp, err := apiRequest("rooms/"+roomId+"/chatMessages?limit="+strconv.Itoa(numberOfMessages), apiToken)
+	resp, err := gitter.apiRequest("rooms/"+roomId+"/chatMessages?limit="+strconv.Itoa(numberOfMessages))
 	if err != nil {
 		return nil, err
 	}
@@ -24,10 +38,10 @@ func GetMessages(roomId string, numberOfMessages int, apiToken string) ([]Messag
 	return messages, nil
 }
 
-func GetRoom(roomUri, apiToken string) (*Room, error) {
+func (gitter *GitterClient) GetRoom(roomUri string) (*Room, error) {
 	var rooms Rooms
 
-	resp, err := apiRequest("rooms?q="+roomUri, apiToken)
+	resp, err := gitter.apiRequest("rooms?q="+roomUri)
 	if err != nil {
 		return nil, err
 	}
@@ -52,17 +66,16 @@ var (
 	apiBaseURL = "https://api.gitter.im/v1/"
 )
 
-func apiRequest(path, apiToken string) (*http.Response, error) {
+func (gitter *GitterClient) apiRequest(path string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", apiBaseURL+path, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	bearer := fmt.Sprintf("Bearer %s", apiToken)
+	bearer := fmt.Sprintf("Bearer %s", gitter.apiToken)
 	req.Header.Add("Authorization", bearer)
 
-	httpClient := utils.DefaultHttpClient()
-	resp, err := httpClient.Do(req)
+	resp, err := gitter.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
