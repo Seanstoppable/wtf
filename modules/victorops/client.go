@@ -21,7 +21,7 @@ func NewVictorOpsClient(apiId, apiKey string) *VictorOpsClient {
 	victor := VictorOpsClient {
 		apiId: apiId,
 		apiKey: apiKey,
-		client: &client,
+		client: client,
 	}
 	return &victor
 }

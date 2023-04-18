@@ -25,7 +25,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Sett
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
 
 		settings: settings,
-		client:   &client,
+		client:   client,
 	}
 
 	return &widget

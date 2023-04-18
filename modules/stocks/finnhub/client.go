@@ -13,7 +13,7 @@ import (
 type Client struct {
 	symbols    []string
 	apiKey     string
-	httpClient http.Client
+	httpClient *http.Client
 }
 
 // NewClient ..

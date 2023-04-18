@@ -29,7 +29,7 @@ func NewWidget(settings *Settings) *Widget {
 	client := utils.DefaultHttpClient()
 	widget := Widget{
 		settings: settings,
-		client:   &client,
+		client:   client,
 	}
 
 	widget.setList()

@@ -17,7 +17,7 @@ func NewRollbarClient(accessToken string) *RollbarClient {
 	httpClient := utils.DefaultHttpClient()
 	rollbar := RollbarClient {
 		accessToken: accessToken,
-		client: &httpClient,
+		client: httpClient,
 	}
 
 	return &rollbar

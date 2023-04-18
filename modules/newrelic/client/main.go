@@ -47,5 +47,5 @@ func NewWithHTTPClient(apiKey string, client *http.Client) *Client {
 // NewClient returns a new Client object for interfacing with the New Relic API.
 func NewClient(apiKey string) *Client {
 	client := utils.DefaultHttpClientWithTimeout(defaultTimeout)
-	return NewWithHTTPClient(apiKey, &client)
+	return NewWithHTTPClient(apiKey, client)
 }

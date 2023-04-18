@@ -37,7 +37,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, _ *tview.Pages
 		Idx: 0,
 
 		settings: settings,
-		client:   &client,
+		client:   client,
 	}
 
 	widget.initializeKeyboardControls()

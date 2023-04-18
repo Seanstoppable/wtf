@@ -27,7 +27,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Sett
 
 		device_token: settings.deviceToken,
 		settings:     settings,
-		client:       &client,
+		client:       client,
 	}
 
 	return &widget

@@ -33,7 +33,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.P
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 		settings:         settings,
 		timeout:          timeout,
-		client:           &client,
+		client:           client,
 	}
 
 	widget.current = true

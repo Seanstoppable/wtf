@@ -18,7 +18,7 @@ type leagueInfo struct {
 
 type Client struct {
 	apiKey     string
-	httpClient http.Client
+	httpClient *http.Client
 }
 
 func NewClient(apiKey string) *Client {

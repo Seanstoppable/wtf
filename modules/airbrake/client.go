@@ -15,7 +15,7 @@ type AirbrakeClient struct {
 func NewAirbrakeClient(authToken string) *AirbrakeClient {
 	httpClient := utils.DefaultHttpClient()
 	airbrake := AirbrakeClient{
-		client:    &httpClient,
+		client:    httpClient,
 		authToken: authToken,
 	}
 	return &airbrake

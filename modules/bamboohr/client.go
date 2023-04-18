@@ -24,7 +24,7 @@ func NewBambooClient(url string, apiKey string, subdomain string) *BambooClient 
 		apiBase:   url,
 		apiKey:    apiKey,
 		subdomain: subdomain,
-		client:    &httpClient,
+		client:    httpClient,
 	}
 
 	return &client

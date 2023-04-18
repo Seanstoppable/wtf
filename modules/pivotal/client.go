@@ -40,7 +40,7 @@ func NewPivotalClient(token string, projectId string) *PivotalClient {
 		token:     token,
 		baseUrl:   baseUrl,
 		projectId: projectId,
-		client:    &client,
+		client:    client,
 	}
 	pivotal.user, _ = pivotal.getCurrentUser()
 	return &pivotal

@@ -40,7 +40,7 @@ type ArpanClient struct {
 func NewArpanClient() *ArpanClient {
 	client := utils.DefaultHttpClient()
 	arpan := ArpanClient{
-		client: &client,
+		client: client,
 	}
 	return &arpan
 }

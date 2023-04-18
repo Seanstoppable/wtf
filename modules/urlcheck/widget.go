@@ -29,7 +29,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Sett
 
 	widget := Widget{
 		TextWidget: view.NewTextWidget(tviewApp, redrawChan, nil, settings.Common),
-		client:     &client,
+		client:     client,
 		settings:   settings,
 		urlList:    make([]*urlResult, maxUrl),
 		timeout:    time.Duration(settings.requestTimeout) + time.Second,

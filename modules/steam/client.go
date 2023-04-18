@@ -31,7 +31,7 @@ func NewClient(opts *ClientOpts) *Steam {
 	client := utils.DefaultHttpClient()
 
 	return &Steam{
-		client:  &client,
+		client:  client,
 		baseUrl: baseUrl,
 	}
 }

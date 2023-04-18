@@ -36,7 +36,7 @@ func NewTravisClient(settings *Settings) *TravisClient {
 		hostname: hostname,
 		apiKey:   settings.apiKey,
 		baseUrl:  baseUrl,
-		client:   &httpClient,
+		client:   httpClient,
 	}
 
 	return &travis

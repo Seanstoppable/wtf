@@ -17,7 +17,7 @@ func NewGitterClient(apiToken string) *GitterClient {
 	client := utils.DefaultHttpClient()
 	gitter := GitterClient {
 		apiToken: apiToken,
-		client:   &client,
+		client:   client,
 	}
 	return &gitter
 }

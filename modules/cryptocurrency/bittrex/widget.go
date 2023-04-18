@@ -37,7 +37,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, settings *Sett
 
 		settings:    settings,
 		summaryList: summaryList{},
-		client:      &client,
+		client:      client,
 	}
 
 	ok = true

@@ -26,7 +26,7 @@ func NewWidget(tviewApp *tview.Application, redrawChan chan bool, pages *tview.P
 		ScrollableWidget: view.NewScrollableWidget(tviewApp, redrawChan, pages, settings.Common),
 
 		settings: settings,
-		client:   &client,
+		client:   client,
 	}
 
 	widget.SetRenderFunction(widget.Render)
